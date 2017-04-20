@@ -53,17 +53,28 @@ public class MMSonConverter implements JsonConverter {
         return "public String toJson(" + c.getName() + " o) { return \"{\"+";
     }
 
+    private String getNewConversionMethodSignature(Class c){
+        return "public String toJson(" + c.getName() + " o) { return \"{\"+";
+    }
+
     private String getConversionInterfaceMethodSignature(Class c) {
         return "public String toJson(Object o){return toJson((" + c.getName() + ")o);}";
     }
 
-    private String getConversionMethodBody(Class c){
+    private static String getFieldJson(Field f){
+        return FieldToJsonMapper.fieldToJson(f);
+    }
 
-        return new StringBuilder()
+    private String getConversionMethodBody(Class c){
+        String methodBody = new StringBuilder()
                 .append(getConversionMethodSignature(c))
-                .append(Arrays.stream(c.getDeclaredFields()).map(Field::getName).map(f -> "\"\\\"" + f + "\\\":\"+o." + f)
-                        .collect(Collectors.joining("+\",\"+")))
+                .append(Arrays.stream(c.getDeclaredFields()).map(MMSonConverter::getFieldJson)
+                        .collect(Collectors.joining("+\", \"+")))
                 .append("+\"}\"; }")
                 .toString();
+
+        System.out.println(methodBody);
+
+        return methodBody;
     }
 }
