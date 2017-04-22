@@ -53,31 +53,49 @@ class FieldToJsonMapper {
         Class fieldClass = f.getType();
 
         if (isClassNumeric(fieldClass) || isClassBoolean(fieldClass)){
-            return "\"\\\"" + f.getName() + "\\\": \"+o." + f.getName();
+            return String.format("sb.append(\"\\\"%s\\\": \"+o.%s)", f.getName(), f.getName());
         }
 
         if (isClassStringOrChar(fieldClass)){
-            return "\"\\\"" + f.getName() + "\\\": \\\"\" +o." + f.getName() + " + \"\\\"\"";
+            return String.format("sb.append(\"\\\"%s\\\": \\\"\" +o.%s + \"\\\"\")", f.getName(), f.getName());
         }
 
         if (isClassCollection(fieldClass)){
-            // TODO: return string that will generate collection JSON
-            // TODO: below is some implementation that sadly does not work due to javassist lambda issues
-            // TODO: see https://github.com/jboss-javassist/javassist/issues/44
-            // String body = "\"\\\"" + f.getName() + "\\\": [\" + o." + f.getName() + ".stream().map(i -> i.toString()).reduce(\"\", String::concat) + \"]\"";
-            // System.out.println(body);
-            // return body;
-
-            return "\"\\\"" + f.getName() + "\\\": \\\"\" +o." + f.getName() + " + \"\\\"\"";
+            // TODO: detect collection item class and handle non primitive fields
+            return String.format("sb.append(\"\\\"%s\\\": \");", f.getName())
+                    + "sb.append(\"[\");"
+                    + String.format("for (int i = 0; i < o.%s.size(); ++i) { ", f.getName())
+                    + String.format("sb.append(\"\\\"\" + o.%s.get(i).toString()  + \"\\\"\");", f.getName())
+                    + String.format("if (i != (o.%s.size() - 1)) { sb.append(\", \"); }", f.getName())
+                    + "};"
+                    + "sb.append(\"]\");";
         }
 
         if (isClassArray(fieldClass)){
-            // TODO: return string that will generate array JSON
-            String preamble = "\"\\\"" + f.getName() + "\": [ Arrays.stream(o." + f.getName() + ").";
-            System.out.println(preamble);
-            return "\"\\\"" + f.getName() + "\\\": \\\"\" +o." + f.getName() + " + \"\\\"\"";
+            // TODO: handle non-primitive array items
+            Class itemClass = fieldClass.getComponentType();
+            if(isClassStringOrChar(itemClass)){
+                return String.format("sb.append(\"\\\"%s\\\": \");", f.getName())
+                        + "sb.append(\"[\");"
+                        + String.format("for (int i = 0; i < o.%s.length; ++i) { ", f.getName())
+                        + String.format("sb.append(\"\\\"\" + o.%s[i]  + \"\\\"\");", f.getName())
+                        + String.format("if (i != (o.%s.length - 1)) { sb.append(\", \"); }", f.getName())
+                        + "};"
+                        + "sb.append(\"]\");";
+            }
+            else if (isClassNumeric(itemClass) || isClassBoolean(itemClass)){
+                return String.format("sb.append(\"\\\"%s\\\": \");", f.getName())
+                        + "sb.append(\"[\");"
+                        + String.format("for (int i = 0; i < o.%s.length; ++i) { ", f.getName())
+                        + String.format("sb.append(o.%s[i]);", f.getName())
+                        + String.format("if (i != (o.%s.length - 1)) { sb.append(\", \"); }", f.getName())
+                        + "};"
+                        + "sb.append(\"]\");";
+            }
+            throw new NotImplementedException("Array item class not supported by mapper.");
+
         }
 
-        throw new NotImplementedException("Field class not supported by converter.");
+        throw new NotImplementedException("Field class not supported by mapper.");
     }
 }
