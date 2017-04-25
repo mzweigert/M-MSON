@@ -12,11 +12,11 @@ public class MMSonConverter implements JsonConverter {
 
     private static final String converterInterfaceFQN = "mmson.JsonConverter";
 
-    private ConcurrentHashMap<Class, JsonConverter> cache;
-    private ClassPool pool;
+    private static ConcurrentHashMap<Class, ConverterWrapper> cache;
+    private static ClassPool pool;
 
     public MMSonConverter(){
-        cache = new ConcurrentHashMap<Class, JsonConverter>();
+        cache = new ConcurrentHashMap<>();
         pool = ClassPool.getDefault();
     }
 
@@ -24,18 +24,20 @@ public class MMSonConverter implements JsonConverter {
         return getConverter(o.getClass()).toJson(o);
     }
 
-    public JsonConverter getConverter(Class c){
+    public static JsonConverter getConverter(Class c){
         if(!cache.containsKey(c)){
             try {
-                cache.put(c, createConverter(c));
+                ConverterWrapper wrapper = new ConverterWrapper();
+                wrapper.setConverter(createConverter(c));
+                cache.put(c, wrapper);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return cache.get(c);
+        return cache.get(c).getConverter();
     }
 
-    private JsonConverter createConverter(Class c) throws CannotCompileException, NotFoundException,
+    private static JsonConverter createConverter(Class c) throws CannotCompileException, NotFoundException,
             IllegalAccessException, InstantiationException {
         CtClass converterClass = pool.makeClass(UUID.randomUUID().toString());
         converterClass.addMethod(CtNewMethod.make(getConversionMethodBody(c), converterClass));
@@ -49,11 +51,11 @@ public class MMSonConverter implements JsonConverter {
         return result;
     }
 
-    private String getConversionMethodSignature(Class c){
+    private static String getConversionMethodSignature(Class c){
         return "public String toJson(" + c.getName() + " o) { StringBuilder sb = new StringBuilder();";
     }
 
-    private String getConversionInterfaceMethodSignature(Class c) {
+    private static String getConversionInterfaceMethodSignature(Class c) {
         return "public String toJson(Object o){return toJson((" + c.getName() + ")o);}";
     }
 
@@ -61,13 +63,13 @@ public class MMSonConverter implements JsonConverter {
         return FieldToJsonMapper.fieldToJson(f);
     }
 
-    private String getConversionMethodBody(Class c){
+    private static String getConversionMethodBody(Class c){
         String methodBody = new StringBuilder()
                 .append(getConversionMethodSignature(c))
                 .append("sb.append(\"{\");")
                 .append(Arrays.stream(c.getDeclaredFields()).map(MMSonConverter::getFieldJson)
                         .collect(Collectors.joining(";sb.append(\", \");")))
-                .append("sb.append(\"}\");")
+                .append(";sb.append(\"}\");")
                 .append("return sb.toString(); }")
                 .toString();
 
@@ -75,4 +77,5 @@ public class MMSonConverter implements JsonConverter {
 
         return methodBody;
     }
-}
+
+    }

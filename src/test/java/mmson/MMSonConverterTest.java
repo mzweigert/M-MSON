@@ -8,7 +8,8 @@ class MMSonConverterTest {
     @Test
     void toJson() {
         MMSonConverter mmson = new MMSonConverter();
-        Student s = new Student();
+        Student s = Student.createRandomStudent(true);
+
         System.out.println(mmson.toJson(s));
     }
 
