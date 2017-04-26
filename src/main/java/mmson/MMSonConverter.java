@@ -67,7 +67,7 @@ public class MMSonConverter implements JsonConverter {
         String methodBody = new StringBuilder()
                 .append(getConversionMethodSignature(c))
                 .append("sb.append(\"{\");")
-                .append(Arrays.stream(c.getDeclaredFields()).map(MMSonConverter::getFieldJson)
+                .append(Arrays.stream(c.getFields()).map(MMSonConverter::getFieldJson)
                         .collect(Collectors.joining(";sb.append(\", \");")))
                 .append(";sb.append(\"}\");")
                 .append("return sb.toString(); }")

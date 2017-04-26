@@ -15,11 +15,12 @@ public class Student {
     public String lastName;
     public int age;
     public List<Integer> notes = Arrays.asList(1 ,2 ,3);
-    public List<String> faculties = Arrays.asList("ble", "bla");
     public int[] intArray = { 4, 5, 6};
     public String[] stringArray = {"foo", "bar"};
     public Student[] students;
     public Student student;
+
+    private List<String> faculties = Arrays.asList("ble", "bla");
 
     public static Student createRandomStudent(boolean withRecursion){
         Student student = new Student();
