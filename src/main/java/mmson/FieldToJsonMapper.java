@@ -71,7 +71,7 @@ public class FieldToJsonMapper {
         if (FieldToJsonMapper.isClassNumeric(fieldClass) || FieldToJsonMapper.isClassBoolean(fieldClass)){
             code = String.format("sb.append(\"\\\"%s\\\": \"+ %s)", f.getName(), getField(f));
         } else if (FieldToJsonMapper.isClassStringOrChar(fieldClass)){
-            code = String.format("sb.append(\"\\\"%s\\\": %s \")", f.getName(), getField(f));
+            code = String.format("sb.append(\"\\\"%s\\\": %s \")", f.getName(), "\\\"\" + " + getField(f) + " + \"\\\"");
         } else if (FieldToJsonMapper.isClassCollection(fieldClass)){
 
             code =    String.format("sb.append(\"\\\"%s\\\": \");", f.getName())
