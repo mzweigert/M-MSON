@@ -71,7 +71,7 @@ public class FieldToJsonMapper {
         if (FieldToJsonMapper.isClassNumeric(fieldClass) || FieldToJsonMapper.isClassBoolean(fieldClass)){
             code = String.format("sb.append(\"\\\"%s\\\": \"+ %s)", f.getName(), getField(f));
         } else if (FieldToJsonMapper.isClassStringOrChar(fieldClass)){
-            code = String.format("sb.append(\"\\\"%s\\\": %s \")", f.getName(), getField(f) == null ? null : "\\\"\" + " + getField(f) + " + \"\\\"");
+            code = String.format("sb.append(\"\\\"%s\\\": %s \")", f.getName(), getField(f));
         } else if (FieldToJsonMapper.isClassCollection(fieldClass)){
 
             code =    String.format("sb.append(\"\\\"%s\\\": \");", f.getName())
@@ -105,7 +105,8 @@ public class FieldToJsonMapper {
             else if (FieldToJsonMapper.isClassNumeric(itemClass) || FieldToJsonMapper.isClassBoolean(itemClass)){
                 code += String.format("sb.append(%s[i]);", getField(f));
             } else {
-                code += String.format("sb.append( mmson.MMSonConverter.getConverter(%s.class).toJson(%s[i]));", f.getType().getComponentType().getCanonicalName(), getField(f));
+                code += String.format("sb.append( mmson.MMSonConverter.getConverter(%s.class).toJson(%s[i]));",
+                        f.getType().getComponentType().getCanonicalName(), getField(f));
             }
             code += String.format("if (i != (%s.length - 1)) { sb.append(\", \"); }", getField(f))
                     + "};"
@@ -116,7 +117,8 @@ public class FieldToJsonMapper {
         } else {
             code =    String.format("sb.append(\"\\\"%s\\\":  \");", f.getName())
                     + String.format("if(%s != null) {  ", getField(f))
-                    + String.format("sb.append(mmson.MMSonConverter.getConverter(%s.class).toJson(%s)); ", f.getType().getCanonicalName(), getField(f))
+                    + String.format("sb.append(mmson.MMSonConverter.getConverter(%s.class).toJson(%s)); ",
+                    f.getType().getCanonicalName(), getField(f))
                     + " } else { sb.append(\"null\"); } ;";
         }
 
