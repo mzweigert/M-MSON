@@ -25,6 +25,7 @@ public class MMSonConverter implements JsonConverter {
     }
 
     public static JsonConverter getConverter(Class c){
+       // System.out.println(Runtime.getRuntime().c);
         if(!cache.containsKey(c)){
             try {
                 ConverterWrapper wrapper = new ConverterWrapper();
@@ -73,9 +74,9 @@ public class MMSonConverter implements JsonConverter {
                 .append("return sb.toString(); }")
                 .toString();
 
-        System.out.println(methodBody);
+        //System.out.println(methodBody);
 
         return methodBody;
     }
 
-    }
+}
